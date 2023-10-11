@@ -1,0 +1,13 @@
+[Unit]
+Description=error page handle
+After=multi-user.target
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+WorkingDirectory=/root/Firewall
+EnvironmentFile=/root/Firewall/.env
+ExecStart=/usr/bin/python3 main.py
+
+[Install]
+WantedBy=multi-user.target
