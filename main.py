@@ -89,7 +89,8 @@ def read_file_from_end(file_path, stop_time):
             result = ""
             for i in checkout_data:
                 result += i + " "
-            send_bale(result)
+            if not result.startswith("CRON"):
+                send_bale(result)
 
 # Set the initial check time
 last_change = int(datetime.now().timestamp())
