@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 import re
 import requests
-
+import psutil
 # Check if logs file is enabled
 with open("/etc/ssh/sshd_config", "r") as sc:
     sc_lines = sc.read().split("\n")
@@ -41,7 +41,7 @@ def get_last_file_change(file_path):
 log_path = "/var/log/auth.log"  # Replace with the actual file path
 
 # Function to send a message via Bale messenger
-def send_bale(result):
+def send_m(result):
     token = os.environ.get("bale_token")
     user_id = int(os.environ.get("user_id"))
     r = requests.post(f"https://tapi.bale.ai/bot{token}/sendMessage",
@@ -89,16 +89,55 @@ def read_file_from_end(file_path, stop_time):
             result = ""
             for i in checkout_data:
                 result += i + " "
-            if not result.startswith("CRON"):
-                send_bale(result)
+            if "CRON[" not in result :
+                send_m(result)
+
+
+ismemoryfull = False
+iscpufull = False
+def usage():
+    global ismemoryfull
+    global iscpufull
+    # Get CPU usage
+    cpu_percent = psutil.cpu_percent(interval=1)
+    
+    # Get memory usage
+    memory = psutil.virtual_memory()
+    memory_percent = memory.percent
+    memory_used = memory.used / 1024 / 1024  # Convert bytes to megabytes
+    memory_total = memory.total / 1024 / 1024  # Convert bytes to megabytes
+    
+    if iscpufull:
+        if cpu_percent>90:
+            pass
+        else:
+            send_m(f"cpu usage was {cpu_percent}%")
+    else:
+        if cpu_percent>90:
+            iscpufull = True
+            send_m(f"cpu warning! {cpu_percent}%")
+
+    
+    if ismemoryfull:
+        if memory_percent>90:
+            pass
+        else:
+            send_m(f"memory usage was {memory_percent}%")
+    else:
+        if memory_percent>90:
+            ismemoryfull = True
+            send_m(f"memory warning! {memory_percent}%")
+
+    
 
 # Set the initial check time
 last_change = int(datetime.now().timestamp())
-send_bale("service was started")
+send_m("service was started")
 while True:
     new_change = get_last_file_change(log_path)
     if new_change != last_change:
         read_file_from_end(log_path, last_change)
         last_change = int(new_change)
+        usage()
     else:
         time.sleep(1)
