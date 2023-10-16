@@ -93,8 +93,8 @@ def read_file_from_end(file_path, stop_time):
                 send_m(result)
 
 
-ismemoryfull = False
-iscpufull = False
+ismemoryfull = True
+iscpufull = True
 def usage():
     global ismemoryfull
     global iscpufull
@@ -112,6 +112,7 @@ def usage():
             pass
         else:
             send_m(f"cpu usage was {cpu_percent}%")
+            iscpufull = False
     else:
         if cpu_percent>90:
             iscpufull = True
@@ -123,6 +124,7 @@ def usage():
             pass
         else:
             send_m(f"memory usage was {memory_percent}%")
+            ismemoryfull = False
     else:
         if memory_percent>90:
             ismemoryfull = True
